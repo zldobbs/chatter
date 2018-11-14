@@ -1,0 +1,14 @@
+.def-nav {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.msg-box {
+    min-height: 50vh;
+    max-height: 50vh;
+    margin-top: 5vh;
+    border: 0.5px solid gray;
+    border-radius: 0.5rem;
+    padding: 5px;
+    overflow-y: scroll;
+}
