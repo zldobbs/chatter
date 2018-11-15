@@ -6,6 +6,7 @@ class MessageForm extends Component {
         // when initializing, connect to the socket-io backend
         super(props);
         this.state = {
+            username: props.username,
             value: '',
             socket: props.socket
         };
@@ -21,7 +22,11 @@ class MessageForm extends Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        this.state.socket.emit('NEW_MSG', {txt: this.state.value});
+        const msg = {
+            txt: this.state.value,
+            username: this.state.username
+        }
+        this.state.socket.emit('NEW_MSG', msg);
         this.setState({
             value: ''
         });
@@ -34,7 +39,7 @@ class MessageForm extends Component {
                     <form onSubmit={this.handleSubmit}>
                         <div className="row">
                             <div className="input-field col s9">
-                                <textarea type="text" id="msg" value={this.state.value} onChange={this.handleChange} className="materialize-textarea"></textarea>
+                                <input type="text" id="msg" value={this.state.value} onChange={this.handleChange} className="validate" />
                                 <label htmlFor="msg" className="active">Message</label>
                             </div>
                             <div className="input-field col s3">

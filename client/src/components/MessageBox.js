@@ -8,9 +8,12 @@ class MessageBox extends Component {
                 <ul className="collection msg-box z-depth-2">
                     {this.props.msgs.map((msg) => (
                         <li key={msg.id} className="collection-item">
-                            {/* <span className="left">{msg.txt}</span>
-                            <span className="right text-muted">{msg.date}</span> */}
-                            {msg.txt}
+                            {/* 
+                            GET DATETIME WORKING
+                            <span className="left">{msg.txt}</span>
+                            <span className="right text-muted">{msg.date}</span> 
+                            */}
+                            {msg.username}: {msg.txt}
                         </li>
                     ))}
                 </ul>
