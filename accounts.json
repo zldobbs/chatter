@@ -1,1 +1,10 @@
-[{"username":"zach","password":"dobbs"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"hello","password":"world"},{"username":"jimmy","password":"guy"}]
+[
+    {
+        "username": "zach",
+        "password": "dobbs"
+    },
+    {
+        "username": "hello",
+        "password": "world"
+    }
+]

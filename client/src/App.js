@@ -138,8 +138,10 @@ class App extends Component {
     }
     if (this.state.errorMsg !== '') {
       errorText = (
-        <div className="error">
-          <p>{this.state.errorMsg}</p>
+        <div className="row">
+          <div className="error col s12 m6 push-m3 center">
+            <p>Error: {this.state.errorMsg}</p>
+          </div>
         </div>
       );
     }

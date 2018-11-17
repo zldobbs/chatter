@@ -1,3 +1,11 @@
+.error {
+    color: white;
+    background-color: lightcoral;
+    border-radius: 0.5rem;
+    border: 0.5px solid gray;
+    width: 100%;
+}
+
 .def-nav {
     margin-left: 0.5rem;
     margin-right: 0.5rem;
@@ -13,9 +21,18 @@
     overflow-y: scroll;
 }
 
-.loginBtn {
-    min-width: 15vw;
-    max-width: 15vw;
+@media only screen and (min-width: 600px) {
+    .loginBtn {
+        min-width: 15vw;
+        max-width: 15vw;
+    }
+}
+
+@media only screen and (max-width: 601px) {
+    .loginBtn {
+        min-width: 30vw;
+        max-width: 30vw;
+    }
 }
 
 .loginBtn .btn {
