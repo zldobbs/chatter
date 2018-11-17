@@ -22,11 +22,26 @@ class MessageForm extends Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        const msg = {
-            txt: this.state.value,
-            username: this.state.username
+        let receiver = '';
+        var txt = this.state.value;
+        if (txt.indexOf("@") === 0) {
+            var i = txt.indexOf(" ");
+            receiver = txt.substr(1, i-1).toLowerCase();
+            console.log('private message to: ' + receiver);
+            var msg2 = {
+                txt: txt,
+                username: this.state.username,
+                receiver: receiver
+            }
+            this.state.socket.emit('PRVT_MSG', msg2); 
         }
-        this.state.socket.emit('NEW_MSG', msg);
+        else {
+            var msg = {
+                txt: txt,
+                username: this.state.username
+            }
+            this.state.socket.emit('NEW_MSG', msg);
+        }
         this.setState({
             value: ''
         });
