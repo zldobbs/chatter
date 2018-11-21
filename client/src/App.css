@@ -21,6 +21,15 @@
     overflow-y: scroll;
 }
 
+.user-list-box {
+    min-height: 25vh;
+    max-height: 25vh;
+    border: 0.5px solid gray;
+    border-radius: 0.5rem;
+    padding: 5px;
+    overflow-y: scroll;
+}
+
 @media only screen and (min-width: 600px) {
     .loginBtn {
         min-width: 15vw;

@@ -1,3 +1,12 @@
+/*
+    Zachary Dobbs
+    CS4450 Lab 3 - Chat room app
+
+    This is the backend of the application. 
+    The server will be hosted here and handle any communications
+    between clients. 
+*/
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
@@ -6,29 +15,26 @@ app.use(bodyParser.json());
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-// array of users within app [{name, socket.id}]
+// dictionary containing user socket ids mapped to usernames 
 let users = {};
 
+// handle user logins 
 function login(user, socket) {
     // open the json file
     let accounts = require("./accounts.json");
     let loggedIn = false; 
-    console.log('Attempting to login: ' + user.username);
+    // check if the username is registered
     for (var i = 0; i < accounts.length; i++) {
         console.log('checking username: ' + accounts[i].username);
         if (accounts[i].username == user.username) {
             if (accounts[i].password == user.password) {
                 loggedIn = true; 
             }
-            else {
-                msg = { txt: "ERROR", err: "Incorrect password"};
-                socket.emit("ACTION", msg);
-            }
         }
         if (loggedIn) break;
     }
     if (!loggedIn) {
-        msg = { txt: "ERROR", err: "Username does not exist"};
+        msg = { txt: "ERROR", err: "Incorrect login information"};
         socket.emit("ACTION", msg);
     }
     else {
@@ -36,22 +42,29 @@ function login(user, socket) {
         // map the user's socketid to their username
         users[user.username] = user.socketid;
         // let everyone know updated users in chat
-        io.emit('UPDATED_USERS', users);
+        io.emit('ACTION', {txt: 'UPDATED_USERS', users: users});
         // let the specific client know it is logged in 
         const msg = {txt: 'LOGGED_IN', username: user.username};
         socket.emit('ACTION', msg);
     }
 }
 
-function logout(username) {
+// logout active user
+function logout(username, socket) {
+    // remove the user from the current array of users
     delete users[username];
     console.log('User logged out: ' + username);
+    let msg = { txt: "LOGOUT" };
+    socket.emit("ACTION", msg);
+    // let everyone know updated users in chat
+    io.emit('ACTION', {txt: 'UPDATED_USERS', users: users});
 } 
 
 // handle any connections from client 
 io.on('connection', (socket) => {
     console.log('User connected ' + socket.id);
-
+    // send connected users 
+    io.emit('ACTION', {txt: 'UPDATED_USERS', users: users});
     // handle messages from client
     socket.on('NEW_MSG', (msg) => {
         console.log('NEW_MSG: ' + msg.txt);
@@ -133,19 +146,19 @@ io.on('connection', (socket) => {
         }
     });
 
+    // handle user logout requests
     socket.on('LOGOUT', (user) => {
-        logout(user.username);
-        let msg = { txt: "LOGOUT" };
-        socket.emit("ACTION", msg);
+        logout(user.username, socket);
     });
 
+    // handle when a user leaves the application 
     socket.on('disconnect', () => {
         let found = false; 
         // delete user from users array 
         for (let user in users) {
             let socketid = users[user];
             if (socketid == socket.id) {
-                logout(user);
+                logout(user, socket);
                 found = true;
             }
             if (found) break;
