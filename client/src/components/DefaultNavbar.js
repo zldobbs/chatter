@@ -7,9 +7,6 @@ class DefaultNavbar extends Component {
             <nav>
                 <div className="nav-wrapper deep-purple">
                     <a className="brand-logo def-nav" href="localhost">chatter</a>
-                    <ul className="right">
-                        <li><a href="http://zachdobbs.life/">More</a></li>
-                    </ul>
                 </div>
             </nav>
         );

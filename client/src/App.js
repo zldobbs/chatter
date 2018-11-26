@@ -18,6 +18,7 @@ import { Container } from 'react-materialize';
 import uuid from 'uuid';
 import './App.css';
 import 'materialize-css/dist/css/materialize.min.css';
+import { mkdirSync } from 'fs';
 
 // socket establishes connection to server from the client
 const socket = socketIOClient('localhost:12097');
@@ -43,7 +44,8 @@ class App extends Component {
         case 'LOGGED_IN':
           // update status to reflect login 
           this.setState({
-            username: msg.username.toLowerCase(),
+            username: msg.username,
+            msgs: [],
             loggedIn: true,
             errorMsg: ''
           });
@@ -100,17 +102,45 @@ class App extends Component {
             errorMsg: ''
           });
           break;
-        case 'PRIVATE_MESSAGE':
-          // display this message only to the intended receiver 
+        case 'USER_LOGIN':
+          // display a user logged in 
           var newMsg3 = {
             id: uuid(),
-            username: 'Private message from ' + msg.from,
-            txt: msg.bodyText,
+            username: 'User logged in',
+            txt: msg.username, 
             date: Date.now()
           }
           var msgs3 = this.state.msgs;
           this.setState({
             msgs: msgs3.concat(newMsg3),
+            errorMsg: ''
+          });
+          break;
+        case 'USER_LOGOUT':
+          // display a user logged out
+          var newMsg4 = {
+            id: uuid(),
+            username: 'User logged out',
+            txt: msg.username, 
+            date: Date.now()
+          }
+          var msgs4 = this.state.msgs;
+          this.setState({
+            msgs: msgs4.concat(newMsg4),
+            errorMsg: ''
+          });
+          break;
+        case 'PRIVATE_MESSAGE':
+          // display this message only to the intended receiver 
+          var newMsg5 = {
+            id: uuid(),
+            username: 'Private message from ' + msg.from,
+            txt: msg.bodyText,
+            date: Date.now()
+          }
+          var msgs5 = this.state.msgs;
+          this.setState({
+            msgs: msgs5.concat(newMsg5),
             errorMsg: ''
           });
           break;
@@ -156,17 +186,21 @@ class App extends Component {
   }
 
   render() {
-    let messageForm, welcomeText, logout, errorText;
+    let messageForm, welcomeText, logout, errorText, messageBox, userList;
     if (this.state.loggedIn) {
       // dynamic updates if a user is logged in
-      welcomeText = (<h3>Welcome, {this.state.username}</h3>);
-      messageForm = <MessageForm socket={socket} username={this.state.username}></MessageForm>
-      logout = <LogoutBox socket={socket} username={this.state.username}></LogoutBox>
+      welcomeText = <h3>Welcome, {this.state.username}</h3>;
+      messageBox = <MessageBox msgs={this.state.msgs}></MessageBox>;
+      messageForm = <MessageForm socket={socket} username={this.state.username}></MessageForm>;
+      logout = <LogoutBox socket={socket} username={this.state.username}></LogoutBox>;
+      userList = <UserList users={this.state.users}></UserList>;
     }
     else {
-      welcomeText = (<h3>Login to chat</h3>);
-      messageForm = <LoginForm socket={socket}></LoginForm>
-      logout = <span></span>
+      welcomeText = <h3>Login to chat</h3>;
+      messageBox = <span></span>;
+      messageForm = <LoginForm socket={socket}></LoginForm>;
+      logout = <span></span>;
+      userList = <span></span>;
     }
     if (this.state.errorMsg !== '') {
       errorText = (
@@ -185,11 +219,11 @@ class App extends Component {
         <DefaultNavbar></DefaultNavbar>
         <Container>
           { welcomeText }
-          <MessageBox msgs={this.state.msgs}></MessageBox>
+          { messageBox }
           { errorText }
           { messageForm }
           { logout }
-          <UserList users={this.state.users}></UserList>
+          { userList }
         </Container>
       </div>
     );

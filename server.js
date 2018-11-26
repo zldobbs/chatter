@@ -17,16 +17,34 @@ const io = require('socket.io')(server);
 
 // dictionary containing user socket ids mapped to usernames 
 let users = {};
+let userCount = 0; 
+
+// max number of users allowed in chat room
+const MAXCLIENTS = 3;  
 
 // handle user logins 
 function login(user, socket) {
+    // check if we have hit the maximum connections
+    if (userCount >= MAXCLIENTS) {
+        msg = { txt: "ERROR", err: "The chat room is full"};
+        socket.emit("ACTION", msg);
+        return;
+    }
+    // check if user is already logged in 
+    for (let username in users) {
+        if (username.toLowerCase() == user.username.toLowerCase()) {
+            msg = { txt: "ERROR", err: user.username + " is already logged in"};
+            socket.emit("ACTION", msg);
+            return;
+        }
+    }
     // open the json file
     let accounts = require("./accounts.json");
     let loggedIn = false; 
     // check if the username is registered
     for (var i = 0; i < accounts.length; i++) {
         console.log('checking username: ' + accounts[i].username);
-        if (accounts[i].username == user.username) {
+        if (accounts[i].username.toLowerCase() == user.username.toLowerCase()) {
             if (accounts[i].password == user.password) {
                 loggedIn = true; 
             }
@@ -38,13 +56,16 @@ function login(user, socket) {
         socket.emit("ACTION", msg);
     }
     else {
+        userCount = userCount + 1;
+        console.log("count: " + userCount);
         // login is successful
         // map the user's socketid to their username
         users[user.username] = user.socketid;
         // let everyone know updated users in chat
         io.emit('ACTION', {txt: 'UPDATED_USERS', users: users});
+        io.emit('ACTION', {txt: 'USER_LOGIN', username: user.username});
         // let the specific client know it is logged in 
-        const msg = {txt: 'LOGGED_IN', username: user.username};
+        msg = {txt: 'LOGGED_IN', username: user.username};
         socket.emit('ACTION', msg);
     }
 }
@@ -54,10 +75,13 @@ function logout(username, socket) {
     // remove the user from the current array of users
     delete users[username];
     console.log('User logged out: ' + username);
+    userCount = userCount - 1;
+    console.log("count: " + userCount);
     let msg = { txt: "LOGOUT" };
     socket.emit("ACTION", msg);
     // let everyone know updated users in chat
     io.emit('ACTION', {txt: 'UPDATED_USERS', users: users});
+    io.emit('ACTION', {txt: 'USER_LOGOUT', username: username});
 } 
 
 // handle any connections from client 
@@ -115,34 +139,44 @@ io.on('connection', (socket) => {
     // handle registering a new user from client
     socket.on('REGISTER', (user) => {
         console.log('REGISTER: ' + user.username + ', ' + user.password + ' : ' + user.socketid);
-        // load accounts from external json file
-        let accounts = require("./accounts.json");
-        // check if the username trying to register already exists
-        let duplicate = false;
-        for (var i = 0; i < accounts.length; i++) {
-            if (accounts[i].username == user.username) {
-                duplicate = true; 
-            }
-            if (duplicate) break;
+        if (user.username.length >= 32) {
+            msg = { txt: "ERROR", err: "Username must be less than 32 characters" }
+            socket.emit("ACTION", msg);
         }
-        if (!duplicate) {
-            // add the account to the external json file
-            accounts.push({username: user.username, password: user.password});
-            let accountsJSON = JSON.stringify(accounts);
-            fs.writeFile("./accounts.json", accountsJSON, 'utf8', (err) => {
-                if (err) {
-                    console.log(err);
-                }
-                else {
-                    msg = { txt: "REGISTERED" };
-                    socket.emit("ACTION", msg);
-                }
-            });
-            login(user, socket);
+        else if (user.password.length < 4 || user.password.length > 8) {
+            msg = { txt: "ERROR", err: "Password must be betweeen 4 and 8 characters" }
+            socket.emit("ACTION", msg);
         }
         else {
-            msg = { txt: "ERROR", err: "Username already in use"};
-            socket.emit("ACTION", msg);
+            // load accounts from external json file
+            let accounts = require("./accounts.json");
+            // check if the username trying to register already exists
+            let duplicate = false;
+            for (var i = 0; i < accounts.length; i++) {
+                if (accounts[i].username.toLowerCase() == user.username.toLowerCase()) {
+                    duplicate = true; 
+                }
+                if (duplicate) break;
+            }
+            if (!duplicate) {
+                // add the account to the external json file
+                accounts.push({username: user.username, password: user.password});
+                let accountsJSON = JSON.stringify(accounts);
+                fs.writeFile("./accounts.json", accountsJSON, 'utf8', (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    else {
+                        msg = { txt: "REGISTERED" };
+                        socket.emit("ACTION", msg);
+                    }
+                });
+                login(user, socket);
+            }
+            else {
+                msg = { txt: "ERROR", err: "Username already in use"};
+                socket.emit("ACTION", msg);
+            }
         }
     });
 

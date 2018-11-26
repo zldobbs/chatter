@@ -25,7 +25,7 @@ class LoginForm extends Component {
     sendAction(msg) {
         if (this.state.username_val.length > 0 && this.state.password_val.length > 0) {
             const newUser = {
-                username: this.state.username_val.toLowerCase(),
+                username: this.state.username_val,
                 password: this.state.password_val,
                 socketid: this.state.socket.id
             }
