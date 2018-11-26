@@ -1,8 +1,11 @@
 # chatter
 
-Chat messaging app, developed for CS4450: Networks Lab 3
-by Zachary Dobbs
+A chat messaging app developed for lab 3 of CS4450: Networks. This application was developed using NodeJS, React, and socket-io. 
 
--- server.js is the entry point for all server functions
--- client is the React frontend of the application
-    -- src/App.js is the entry point for all client functions
+## Usage
+
+`npm run dev`
+
+* server.js is the entry point for all server functions
+* client/ is the React frontend of the application
+* client/src/App.js is the entry point for all client functions
